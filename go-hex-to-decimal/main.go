@@ -5,10 +5,12 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"sync"
 )
 
 var hex = [16]string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"}
 var hexToDec = map[string]int{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "A": 10, "B": 11, "C": 12, "D": 13, "E": 14, "F": 15}
+var wg sync.WaitGroup
 
 func main() {
 	if len(os.Args) != 2 {
@@ -20,10 +22,19 @@ func main() {
 		fmt.Println("Invalid decimal input")
 		os.Exit(1)
 	}
-	ToDecimal(ToHex(inputAsDecimal))
+
+	ch := make(chan string)
+	wg.Add(2)
+
+	go ToHex(ch, &wg, inputAsDecimal)
+	go ToDecimal(ch, &wg)
+
+	wg.Wait()
 }
 
-func ToHex(number int64) string {
+func ToHex(ch chan string, wg *sync.WaitGroup, number int64) {
+	defer wg.Done()
+
 	var result string
 	inputDecimal := number
 	for inputDecimal != 0 {
@@ -32,8 +43,8 @@ func ToHex(number int64) string {
 		inputDecimal = devider
 	}
 	res := Reverse(result)
-	fmt.Println("Hex result of number ", number, " is -> ", res)
-	return res
+	fmt.Println("Hex result of number:", number, "is ->", res)
+	ch <- res
 }
 
 func ToHexDigit(number int64) (devider int64, remaining int64) {
@@ -43,13 +54,16 @@ func ToHexDigit(number int64) (devider int64, remaining int64) {
 	return devider, remaining
 }
 
-func ToDecimal(hex string) {
+func ToDecimal(ch chan string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	var result float64
-	revertHex := []rune(Reverse(hex))
+	hexFromCh := <-ch
+	revertHex := []rune(Reverse(hexFromCh))
 	for exp := len(revertHex) - 1; exp >= 0; exp-- {
 		result += MultiplyPowerByNumber(hexToDec[string(revertHex[exp])], exp)
 	}
-	fmt.Println("Decimal result of hex ", hex, " is -> ", result)
+	fmt.Printf("Decimal result of hex: %s is -> %.0f\n", hexFromCh, result)
 }
 
 func MultiplyPowerByNumber(num int, exponential int) float64 {
