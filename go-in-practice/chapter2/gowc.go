@@ -2,25 +2,28 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"os"
 	"strings"
+
+	flags "github.com/jessevdk/go-flags"
 )
 
-var wordsFlag bool
-var linesFlag bool
-
-func init() {
-	flag.BoolVar(&linesFlag, "lines", false, "Print the newline count")
-	flag.BoolVar(&linesFlag, "l", false, "Print the newline count")
-
-	flag.BoolVar(&wordsFlag, "words", false, "Print the word counts.")
-	flag.BoolVar(&wordsFlag, "w", false, "Print the word counts.")
+type Options struct {
+	WordsFlag bool `short:"w" long:"words" description:"Print the newline count."`
+	LinesFlag bool `short:"l" long:"lines" description:"Print the word counts."`
 }
 
 func main() {
-	flag.Parse()
+	var opts Options
+	parser := flags.NewParser(&opts, flags.Default)
+
+	_, err := parser.Parse()
+	if err != nil {
+		fmt.Println("Error parsing command-line arguments:", err)
+		os.Exit(1)
+	}
+
 	scanner := bufio.NewScanner(os.Stdin)
 	words := 0
 	lines := 0
@@ -35,15 +38,15 @@ func main() {
 		fmt.Fprintln(os.Stderr, "reading input:", err)
 	}
 
-	if wordsFlag {
+	if opts.WordsFlag {
 		fmt.Println("Words count: ", words)
 	}
 
-	if linesFlag {
+	if opts.LinesFlag {
 		fmt.Println("Lines: ", lines)
 	}
 
-	if !linesFlag && !wordsFlag {
+	if !opts.WordsFlag && !opts.LinesFlag {
 		fmt.Print("use \"./gowc --help\" for more information.")
 	}
 }
