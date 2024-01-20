@@ -1,0 +1,27 @@
+package main
+
+import "fmt"
+
+func main() {
+
+	data := []string{"a", "c", "e", "a", "e"}
+	counts := make(map[string]int)
+
+	for _, value := range data {
+		counts[value]++
+	}
+	letters := []string{"a", "b", "c", "d", "e"}
+
+	for _, letter := range letters {
+		count, ok := counts[letter]
+
+		if !ok {
+			fmt.Printf("%s: not found\n", letter)
+		} else {
+			fmt.Printf("%s: %d\n", letter, count)
+		}
+	}
+
+	delete(counts, "d")
+	fmt.Println(counts)
+}
