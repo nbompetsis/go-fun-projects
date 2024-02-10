@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<h1>Guestbook page</h1>
+
+<div>
+    {{.SignaturesCount}} total signature - <a href="/guestbook/new">Add Your Signature</a>
+</div>
+
+<div>
+    {{range .Signatures}}
+    <p>{{.}}</p>
+    {{end}}
+</div>
