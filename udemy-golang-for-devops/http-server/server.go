@@ -8,16 +8,19 @@ import (
 
 type Book struct {
 	Page  string   `json:"page"`
+	Input string   `json:"input"`
 	Words []string `json:"words"`
 }
 
 var TestBook = []Book{
 	{
 		Page:  "1",
+		Input: "drama",
 		Words: []string{"a", "b"},
 	},
 	{
 		Page:  "2",
+		Input: "novel",
 		Words: []string{"c", "d"},
 	},
 }
