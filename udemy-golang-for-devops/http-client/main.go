@@ -8,15 +8,46 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 )
 
-const (
-	PI, THETA = 3.14, 1
-)
+type Response interface {
+	GetResponse() string
+}
 
 type Book struct {
 	Page  string   `json:"page"`
+	Input string   `json:"input"`
 	Words []string `json:"words"`
+}
+
+func (b Book) GetResponse() string {
+	return strings.Join(b.Words, ", ")
+}
+
+func doRequest(req string) (Response, error) {
+	if _, err := url.ParseRequestURI(req); err != nil {
+		log.Fatalf("Url is invalid, url: %v\n", os.Args[1])
+	}
+	response, err := http.Get(req)
+	if err != nil {
+		log.Fatalf("Something wrong: %v\n", err)
+	}
+
+	defer response.Body.Close() //import step! You need to close the reader
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var book Book
+
+	if err := json.Unmarshal(body, &book); err != nil {
+		log.Fatalf("Something wrong: %v\n", err)
+	}
+
+	return book, nil
 }
 
 func main() {
@@ -26,29 +57,10 @@ func main() {
 	}
 
 	urlParam := os.Args[1]
-	if _, err := url.ParseRequestURI(urlParam); err != nil {
-		log.Fatalf("Url is invalid, url: %v\n", os.Args[1])
-	}
-	response, err := http.Get(urlParam)
+	response, err := doRequest(urlParam)
 	if err != nil {
 		log.Fatalf("Something wrong: %v\n", err)
 	}
 
-	defer response.Body.Close() //import step! You need to close the reader
-
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Fatalf("Something wrong: %v\n", err)
-	}
-
-	fmt.Printf("Http status %d, body %s", response.StatusCode, string(body))
-
-	var books []Book
-
-	if err := json.Unmarshal(body, &books); err != nil {
-		log.Fatalf("Something wrong: %v\n", err)
-	}
-
-	fmt.Printf("This is how to unmarshal a json response: %v \n", books)
-
+	fmt.Printf("This is how to unmarshal a json response: %v \n", response)
 }
