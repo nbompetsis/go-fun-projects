@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +27,7 @@ var TestBook = []Book{
 }
 
 func getBooks(c *gin.Context) {
+	fmt.Println("Authorization Header %s\n", c.Request.Header.Get("Authorization"))
 	c.IndentedJSON(http.StatusOK, TestBook)
 }
 
@@ -40,8 +42,8 @@ func postBooks(c *gin.Context) {
 
 func main() {
 	router := gin.Default()
+	router.POST("/login", Login)
 	router.GET("/books", getBooks)
 	router.POST("/books", postBooks)
-
 	router.Run("localhost:8080")
 }
