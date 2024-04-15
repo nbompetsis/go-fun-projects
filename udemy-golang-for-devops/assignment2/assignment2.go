@@ -17,7 +17,6 @@ func getResource(t time.Time, finished chan bool) {
 	fmt.Println("Status Code", resp.StatusCode)
 	if resp.StatusCode == http.StatusTooManyRequests {
 		finished <- true
-		fmt.Println("Send true")
 	}
 
 	defer resp.Body.Close()
@@ -28,7 +27,6 @@ func getResource(t time.Time, finished chan bool) {
 
 	fmt.Println("Body:", string(body))
 	finished <- false
-	fmt.Println("Send false")
 }
 
 func doEvery(d time.Duration, f func(time.Time, chan bool)) {
