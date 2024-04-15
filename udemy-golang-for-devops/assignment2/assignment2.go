@@ -9,6 +9,7 @@ import (
 )
 
 func getResource(t time.Time, finished chan bool) {
+	fmt.Println(t)
 	resp, err := http.Get("http://localhost:8080/ratelimit")
 	if err != nil {
 		log.Fatal(err)
@@ -41,5 +42,13 @@ func doEvery(d time.Duration, f func(time.Time, chan bool)) {
 }
 
 func main() {
-	doEvery(50*time.Millisecond, getResource)
+	// doEvery(50*time.Millisecond, getResource)
+	finished := make(chan bool)
+	for {
+		go getResource(time.Now(), finished)
+		isFinished := <-finished
+		if isFinished {
+			break
+		}
+	}
 }
